@@ -1,4 +1,4 @@
-import { PLUGIN, UI } from "@common/networkSides";
+import { PLUGIN, UI, SelectionData } from "@common/networkSides";
 
 export const UI_CHANNEL = UI.channelBuilder()
   .emitsTo(PLUGIN, (message) => {
@@ -17,10 +17,4 @@ export const UI_CHANNEL = UI.channelBuilder()
 
 // ---------- Message handlers
 
-UI_CHANNEL.registerMessageHandler("ping", () => {
-  return "pong";
-});
-
-UI_CHANNEL.registerMessageHandler("hello", (text) => {
-  console.log("Plugin side said", text);
-});
+// Selection update handler will be registered in App component
