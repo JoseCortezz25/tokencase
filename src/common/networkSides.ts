@@ -25,4 +25,5 @@ export const UI = Networker.createSide("UI-side").listens<{
 
 export const PLUGIN = Networker.createSide("Plugin-side").listens<{
   getSelectionTokens(): Promise<SelectionData>;
+  showNotification(message: string): void;
 }>();

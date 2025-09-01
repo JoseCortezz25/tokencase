@@ -1,7 +1,7 @@
 import * as React from "react"
 
 interface ButtonProps extends React.ComponentProps<"button"> {
-  variant?: "default" | "primary";
+  variant?: "default" | "primary" | "secondary";
   size?: "default" | "sm" | "lg";
 }
 
@@ -13,9 +13,15 @@ function Button({
   ...props
 }: ButtonProps) {
   const baseClasses = "btn";
-  const variantClasses = variant === "primary" ? "btn-primary" : "btn-primary";
-  const sizeClasses = className.includes("w-full") ? "btn-full" : "";
+  let variantClasses = "btn-primary";
   
+  if (variant === "secondary") {
+    variantClasses = "btn-secondary";
+  } else if (variant === "primary") {
+    variantClasses = "btn-primary";
+  }
+  
+  const sizeClasses = className.includes("w-full") ? "btn-full" : "";
   const combinedClasses = `${baseClasses} ${variantClasses} ${sizeClasses} ${className}`.trim();
 
   return (

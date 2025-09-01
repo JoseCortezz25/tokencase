@@ -108,3 +108,7 @@ function getSelectionTokens(): SelectionData {
 PLUGIN_CHANNEL.registerMessageHandler("getSelectionTokens", async () => {
   return getSelectionTokens();
 });
+
+PLUGIN_CHANNEL.registerMessageHandler("showNotification", async (message: string) => {
+  figma.notify(message);
+});
