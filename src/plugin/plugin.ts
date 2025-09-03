@@ -85,40 +85,40 @@ async function bootstrap() {
       }
     }
     
-    // Process variables if they exist
-    if (selectionColors.variables && selectionColors.variables.length > 0) {
-      console.log('Found', selectionColors.variables.length, 'variables in selection');
+    // Process variables if they exist (commented out temporarily)
+    // if (selectionColors.variables && selectionColors.variables.length > 0) {
+    //   console.log('Found', selectionColors.variables.length, 'variables in selection');
       
-      for (const variable of selectionColors.variables) {
-        console.log('Processing variable:', variable.name, variable.id);
-        
-        try {
-          const collection = figma.variables.getVariableCollectionById(variable.variableCollectionId);
-          if (collection) {
-            const mode = collection.defaultModeId;
-            const value = variable.valuesByMode[mode];
-            
-            if (value && typeof value === 'object' && 'r' in value) {
-              allTokens.push({
-                id: variable.id,
-                name: variable.name,
-                type: "VARIABLE",
-                color: {
-                  r: value.r,
-                  g: value.g,
-                  b: value.b,
-                  a: value.a ?? 1
-                },
-                hex: rgbToHex(value.r, value.g, value.b)
-              });
-              console.log('Added color variable:', variable.name, 'hex:', rgbToHex(value.r, value.g, value.b));
-            }
-          }
-        } catch (e) {
-          console.log('Error processing variable:', variable.name, e);
-        }
-      }
-    }
+    //   for (const variable of selectionColors.variables) {
+    //     console.log('Processing variable:', variable.name, variable.id);
+    //     
+    //     try {
+    //       const collection = figma.variables.getVariableCollectionById(variable.variableCollectionId);
+    //       if (collection) {
+    //         const mode = collection.defaultModeId;
+    //         const value = variable.valuesByMode[mode];
+    //         
+    //         if (value && typeof value === 'object' && 'r' in value) {
+    //           allTokens.push({
+    //             id: variable.id,
+    //             name: variable.name,
+    //             type: "VARIABLE",
+    //             color: {
+    //               r: value.r,
+    //               g: value.g,
+    //               b: value.b,
+    //               a: value.a ?? 1
+    //             },
+    //             hex: rgbToHex(value.r, value.g, value.b)
+    //           });
+    //           console.log('Added color variable:', variable.name, 'hex:', rgbToHex(value.r, value.g, value.b));
+    //         }
+    //       }
+    //     } catch (e) {
+    //       console.log('Error processing variable:', variable.name, e);
+    //     }
+    //   }
+    // }
     
     console.log('Final results - Tokens found:', allTokens.length);
     
