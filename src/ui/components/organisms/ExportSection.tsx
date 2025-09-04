@@ -10,15 +10,11 @@ import {
   convertNaming,
   generateExportCode,
   copyToClipboard,
-  downloadFile
+  downloadFile,
+  type NamingConvention,
+  type ExportFormat,
+  type ColorFormat
 } from '../../utils';
-
-type NamingConvention =
-  | 'kebab-case'
-  | 'camelCase'
-  | 'snake_case'
-  | 'PascalCase';
-type ExportFormat = 'css' | 'scss' | 'tailwind' | 'js-object';
 
 interface ExportSectionProps {
   tokens: ColorToken[];
@@ -38,12 +34,18 @@ const formatOptions = [
   { value: 'js-object', label: 'JS Object', description: 'export const' }
 ] as const;
 
+const colorFormatOptions = [
+  { value: 'hex', label: 'HEX', description: '#ffffff' },
+  { value: 'rgba', label: 'RGBA', description: 'rgba(255, 255, 255, 1)' }
+] as const;
+
 function ExportSection({ tokens }: ExportSectionProps) {
   const [namingConvention, setNamingConvention] =
     useState<NamingConvention>('kebab-case');
   const [exportFormat, setExportFormat] = useState<ExportFormat>('css');
+  const [colorFormat, setColorFormat] = useState<ColorFormat>('hex');
 
-  const exportCode = generateExportCode(tokens, namingConvention, exportFormat);
+  const exportCode = generateExportCode(tokens, namingConvention, exportFormat, colorFormat);
 
   const handleCopyCode = () => {
     copyToClipboard(exportCode);
@@ -97,6 +99,24 @@ function ExportSection({ tokens }: ExportSectionProps) {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="mb-4 rounded-lg border border-gray-200 p-4">
+        <Label variant="semibold" className="mb-3 block">
+          Color Format
+        </Label>
+        <div className="flex gap-3">
+          {colorFormatOptions.map(option => (
+            <OptionButton
+              key={option.value}
+              isSelected={colorFormat === option.value}
+              label={option.label}
+              description={option.description}
+              onClick={() => setColorFormat(option.value)}
+              className="flex-1"
+            />
+          ))}
         </div>
       </div>
 
