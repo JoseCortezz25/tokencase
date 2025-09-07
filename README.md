@@ -2,7 +2,7 @@
 
 TokenCase is a Figma plugin designed to streamline the management and export of design tokens directly from your design files.
 
-![Preview](.github/assets/preview.png)
+![Preview](.screenshot.png)
 
 ## ✨ Features
 
