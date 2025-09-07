@@ -15,6 +15,7 @@ import {
   type ExportFormat,
   type ColorFormat
 } from '../../utils';
+import { CopyIcon, DownloadIcon } from 'lucide-react';
 
 interface ExportSectionProps {
   tokens: ColorToken[];
@@ -45,7 +46,12 @@ function ExportSection({ tokens }: ExportSectionProps) {
   const [exportFormat, setExportFormat] = useState<ExportFormat>('css');
   const [colorFormat, setColorFormat] = useState<ColorFormat>('hex');
 
-  const exportCode = generateExportCode(tokens, namingConvention, exportFormat, colorFormat);
+  const exportCode = generateExportCode(
+    tokens,
+    namingConvention,
+    exportFormat,
+    colorFormat
+  );
 
   const handleCopyCode = () => {
     copyToClipboard(exportCode);
@@ -64,7 +70,7 @@ function ExportSection({ tokens }: ExportSectionProps) {
         <h3 className="text-base font-medium text-gray-900">Export Settings</h3>
       </div>
 
-      <div className="mb-5 rounded-xl bg-gray-50 p-5">
+      <div className="mb-5">
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label variant="semibold" className="mb-3 block">
@@ -102,7 +108,7 @@ function ExportSection({ tokens }: ExportSectionProps) {
         </div>
       </div>
 
-      <div className="mb-4 rounded-lg border border-gray-200 p-4">
+      <div className="mb-4">
         <Label variant="semibold" className="mb-3 block">
           Color Format
         </Label>
@@ -126,16 +132,22 @@ function ExportSection({ tokens }: ExportSectionProps) {
         className="mb-4"
       />
 
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3">
         <Button
           variant="primary"
-          className="flex-1"
+          className="flex-1 gap-2"
           onClick={handleDownloadFile}
         >
+          <DownloadIcon className="h-4 w-4" />
           Download File
         </Button>
 
-        <Button variant="secondary" className="flex-1" onClick={handleCopyCode}>
+        <Button
+          variant="secondary"
+          className="flex-1 gap-2"
+          onClick={handleCopyCode}
+        >
+          <CopyIcon className="h-4 w-4" />
           Copy Code
         </Button>
       </div>
