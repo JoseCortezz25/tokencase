@@ -32,6 +32,11 @@ const formatOptions = [
   { value: 'css', label: 'CSS Variables', description: '--color: value' },
   { value: 'scss', label: 'SCSS Variables', description: '$color: value' },
   { value: 'tailwind', label: 'Tailwind Config', description: 'colors: {...}' },
+  {
+    value: 'tailwind-theme',
+    label: 'Tailwind Theme',
+    description: '@theme {...}'
+  },
   { value: 'js-object', label: 'JS Object', description: 'export const' }
 ] as const;
 
@@ -93,7 +98,7 @@ function ExportSection({ tokens }: ExportSectionProps) {
             <Label variant="semibold" className="mb-3 block">
               Export Format
             </Label>
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-2">
               {formatOptions.map(option => (
                 <OptionButton
                   key={option.value}
