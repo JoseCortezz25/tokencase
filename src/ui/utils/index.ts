@@ -1,10 +1,22 @@
 import { ColorToken } from '@common/networkSides';
 
-export type NamingConvention = 'kebab-case' | 'camelCase' | 'snake_case' | 'PascalCase';
-export type ExportFormat = 'css' | 'scss' | 'tailwind' | 'js-object';
+export type NamingConvention =
+  | 'kebab-case'
+  | 'camelCase'
+  | 'snake_case'
+  | 'PascalCase';
+export type ExportFormat =
+  | 'css'
+  | 'scss'
+  | 'tailwind'
+  | 'tailwind-theme'
+  | 'js-object';
 export type ColorFormat = 'hex' | 'rgba';
 
-export function convertNaming(name: string, convention: NamingConvention): string {
+export function convertNaming(
+  name: string,
+  convention: NamingConvention
+): string {
   const cleanName = name
     .replace(/[\/\\]/g, '-')
     .replace(/\s+/g, '-')
@@ -33,15 +45,18 @@ export function convertNaming(name: string, convention: NamingConvention): strin
 export function hexToRgba(hex: string, alpha: number = 1): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) return hex;
-  
+
   const r = parseInt(result[1], 16);
   const g = parseInt(result[2], 16);
   const b = parseInt(result[3], 16);
-  
+
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-export function getColorValue(token: ColorToken, colorFormat: ColorFormat): string {
+export function getColorValue(
+  token: ColorToken,
+  colorFormat: ColorFormat
+): string {
   if (colorFormat === 'rgba') {
     // If token has color object with rgba values, use those, otherwise convert from hex
     if (token.color) {
@@ -70,6 +85,8 @@ export function generateExportCode(
       return generateSCSS(tokens, naming, colorFormat);
     case 'tailwind':
       return generateTailwind(tokens, naming, colorFormat);
+    case 'tailwind-theme':
+      return generateTailwindTheme(tokens, naming, colorFormat);
     case 'js-object':
       return generateJSObject(tokens, naming, colorFormat);
     default:
@@ -77,7 +94,11 @@ export function generateExportCode(
   }
 }
 
-function generateCSS(tokens: ColorToken[], naming: NamingConvention, colorFormat: ColorFormat): string {
+function generateCSS(
+  tokens: ColorToken[],
+  naming: NamingConvention,
+  colorFormat: ColorFormat
+): string {
   const variables = tokens
     .map(token => {
       const varName = convertNaming(token.name, naming);
@@ -89,7 +110,11 @@ function generateCSS(tokens: ColorToken[], naming: NamingConvention, colorFormat
   return `:root {\n${variables}\n}`;
 }
 
-function generateSCSS(tokens: ColorToken[], naming: NamingConvention, colorFormat: ColorFormat): string {
+function generateSCSS(
+  tokens: ColorToken[],
+  naming: NamingConvention,
+  colorFormat: ColorFormat
+): string {
   return tokens
     .map(token => {
       const varName = convertNaming(token.name, naming);
@@ -121,6 +146,22 @@ function generateTailwind(
     }
   }
 }`;
+}
+
+function generateTailwindTheme(
+  tokens: ColorToken[],
+  naming: NamingConvention,
+  colorFormat: ColorFormat
+): string {
+  const variables = tokens
+    .map(token => {
+      const varName = convertNaming(token.name, naming);
+      const colorValue = getColorValue(token, colorFormat);
+      return `  --color-${varName}: ${colorValue};`;
+    })
+    .join('\n');
+
+  return `@theme {\n${variables}\n}`;
 }
 
 function generateJSObject(
@@ -159,6 +200,7 @@ export function downloadFile(content: string, format: ExportFormat): void {
     css: 'css',
     scss: 'scss',
     tailwind: 'js',
+    'tailwind-theme': 'css',
     'js-object': 'js'
   };
 
