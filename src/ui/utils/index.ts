@@ -4,7 +4,9 @@ export type NamingConvention =
   | 'kebab-case'
   | 'camelCase'
   | 'snake_case'
-  | 'PascalCase';
+  | 'PascalCase'
+  | 'flatcase';
+
 export type ExportFormat =
   | 'css'
   | 'scss'
@@ -37,6 +39,8 @@ export function convertNaming(
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join('');
+    case 'flatcase':
+      return cleanName.replace(/-/g, '');
     default:
       return cleanName;
   }

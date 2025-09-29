@@ -21,7 +21,7 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white px-4 pb-4">
+    <div className="h-full min-h-screen overflow-auto bg-white px-4 pb-4">
       <div className="mx-auto">
         <AppHeader />
 

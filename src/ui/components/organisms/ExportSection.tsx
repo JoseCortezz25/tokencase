@@ -25,7 +25,8 @@ const namingOptions = [
   { value: 'kebab-case', label: 'kebab-case', example: 'red-100' },
   { value: 'camelCase', label: 'camelCase', example: 'red100' },
   { value: 'snake_case', label: 'snake_case', example: 'red_100' },
-  { value: 'PascalCase', label: 'PascalCase', example: 'Red100' }
+  { value: 'PascalCase', label: 'PascalCase', example: 'Red100' },
+  { value: 'flatcase', label: 'flatcase', example: 'red100' }
 ] as const;
 
 const formatOptions = [
