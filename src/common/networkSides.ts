@@ -17,6 +17,7 @@ export interface SelectionData {
   hasSelection: boolean;
   nodeCount: number;
   colorTokens: ColorToken[];
+  variableTokens: ColorToken[];
 }
 
 export const UI = Networker.createSide('UI-side').listens<{

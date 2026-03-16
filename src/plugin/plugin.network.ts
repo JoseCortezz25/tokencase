@@ -28,29 +28,19 @@ function getSelectionTokens(): SelectionData {
     return {
       hasSelection: false,
       nodeCount: 0,
-      colorTokens: []
+      colorTokens: [],
+      variableTokens: []
     };
   }
 
-  // Use Figma's built-in API to get colors from selection
   const selectionColors = figma.getSelectionColors();
 
-  if (!selectionColors || !selectionColors.styles) {
-    return {
-      hasSelection: true,
-      nodeCount: selection.length,
-      colorTokens: []
-    };
-  }
-
-  const allTokens: ColorToken[] = [];
-
-  // Process paint styles
-  if (selectionColors.styles && selectionColors.styles.length > 0) {
+  const styleTokens: ColorToken[] = [];
+  if (selectionColors && selectionColors.styles && selectionColors.styles.length > 0) {
     for (const style of selectionColors.styles) {
       const paint = style.paints[0];
       if (paint && paint.type === 'SOLID') {
-        allTokens.push({
+        styleTokens.push({
           id: style.id,
           name: style.name,
           type: 'STYLE',
@@ -66,10 +56,62 @@ function getSelectionTokens(): SelectionData {
     }
   }
 
+  const variableTokens: ColorToken[] = [];
+  const seenVariableIds = new Set<string>();
+
+  function collectVariablesFromNode(node: SceneNode) {
+    if ('boundVariables' in node && node.boundVariables) {
+      const boundVars = node.boundVariables as Record<string, VariableAlias | VariableAlias[]>;
+      for (const aliasOrArray of Object.values(boundVars)) {
+        const aliases = Array.isArray(aliasOrArray) ? aliasOrArray : [aliasOrArray];
+        for (const alias of aliases) {
+          if (alias && alias.type === 'VARIABLE_ALIAS' && !seenVariableIds.has(alias.id)) {
+            seenVariableIds.add(alias.id);
+            try {
+              const variable = figma.variables.getVariableById(alias.id);
+              if (variable && variable.resolvedType === 'COLOR') {
+                const modeIds = Object.keys(variable.valuesByMode);
+                if (modeIds.length > 0) {
+                  const value = variable.valuesByMode[modeIds[0]] as RGBA;
+                  if (value && typeof value === 'object' && 'r' in value) {
+                    variableTokens.push({
+                      id: variable.id,
+                      name: variable.name,
+                      type: 'VARIABLE',
+                      color: {
+                        r: value.r,
+                        g: value.g,
+                        b: value.b,
+                        a: value.a ?? 1
+                      },
+                      hex: rgbToHex(value.r, value.g, value.b)
+                    });
+                  }
+                }
+              }
+            } catch (e) {
+              console.log('Error processing variable id:', alias.id, e);
+            }
+          }
+        }
+      }
+    }
+    if ('children' in node) {
+      for (const child of (node as ChildrenMixin).children) {
+        collectVariablesFromNode(child as SceneNode);
+      }
+    }
+  }
+
+  for (const node of selection) {
+    collectVariablesFromNode(node);
+  }
+
   return {
     hasSelection: true,
     nodeCount: selection.length,
-    colorTokens: allTokens
+    colorTokens: styleTokens,
+    variableTokens
   };
 }
 

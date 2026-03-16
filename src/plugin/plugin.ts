@@ -21,7 +21,8 @@ async function bootstrap() {
       PLUGIN_CHANNEL.emit(UI, "selectionUpdate", [{
         hasSelection: false,
         nodeCount: 0,
-        colorTokens: []
+        colorTokens: [],
+        variableTokens: []
       }]);
     } else {
       // Request tokens for current selection
@@ -40,35 +41,26 @@ async function bootstrap() {
       return {
         hasSelection: false,
         nodeCount: 0,
-        colorTokens: []
+        colorTokens: [],
+        variableTokens: []
       };
     }
-    
+
     // Use Figma's built-in API to get colors from selection
     const selectionColors = figma.getSelectionColors();
     console.log('Selection colors:', selectionColors);
-    
-    if (!selectionColors || !selectionColors.styles) {
-      console.log('No colors found in selection');
-      return {
-        hasSelection: true,
-        nodeCount: selection.length,
-        colorTokens: []
-      };
-    }
-    
-    const allTokens: any[] = [];
-    
-    // Process paint styles
-    if (selectionColors.styles && selectionColors.styles.length > 0) {
+
+    const styleTokens: any[] = [];
+
+    if (selectionColors && selectionColors.styles && selectionColors.styles.length > 0) {
       console.log('Found', selectionColors.styles.length, 'paint styles in selection');
-      
+
       for (const style of selectionColors.styles) {
         console.log('Processing style:', style.name, style.id);
-        
+
         const paint = style.paints[0];
         if (paint && paint.type === "SOLID") {
-          allTokens.push({
+          styleTokens.push({
             id: style.id,
             name: style.name,
             type: "STYLE",
@@ -80,52 +72,70 @@ async function bootstrap() {
             },
             hex: rgbToHex(paint.color.r, paint.color.g, paint.color.b)
           });
-          console.log('Added paint style:', style.name, 'hex:', rgbToHex(paint.color.r, paint.color.g, paint.color.b));
         }
       }
     }
-    
-    // Process variables if they exist (commented out temporarily)
-    // if (selectionColors.variables && selectionColors.variables.length > 0) {
-    //   console.log('Found', selectionColors.variables.length, 'variables in selection');
-      
-    //   for (const variable of selectionColors.variables) {
-    //     console.log('Processing variable:', variable.name, variable.id);
-    //     
-    //     try {
-    //       const collection = figma.variables.getVariableCollectionById(variable.variableCollectionId);
-    //       if (collection) {
-    //         const mode = collection.defaultModeId;
-    //         const value = variable.valuesByMode[mode];
-    //         
-    //         if (value && typeof value === 'object' && 'r' in value) {
-    //           allTokens.push({
-    //             id: variable.id,
-    //             name: variable.name,
-    //             type: "VARIABLE",
-    //             color: {
-    //               r: value.r,
-    //               g: value.g,
-    //               b: value.b,
-    //               a: value.a ?? 1
-    //             },
-    //             hex: rgbToHex(value.r, value.g, value.b)
-    //           });
-    //           console.log('Added color variable:', variable.name, 'hex:', rgbToHex(value.r, value.g, value.b));
-    //         }
-    //       }
-    //     } catch (e) {
-    //       console.log('Error processing variable:', variable.name, e);
-    //     }
-    //   }
-    // }
-    
-    console.log('Final results - Tokens found:', allTokens.length);
-    
+
+    // Extract color variables from the selection
+    const variableTokens: any[] = [];
+    const seenVariableIds = new Set<string>();
+
+    function collectVariablesFromNode(node: SceneNode) {
+      if ('boundVariables' in node && node.boundVariables) {
+        const boundVars = node.boundVariables as Record<string, VariableAlias | VariableAlias[]>;
+        for (const aliasOrArray of Object.values(boundVars)) {
+          const aliases = Array.isArray(aliasOrArray) ? aliasOrArray : [aliasOrArray];
+          for (const alias of aliases) {
+            if (alias && alias.type === 'VARIABLE_ALIAS' && !seenVariableIds.has(alias.id)) {
+              seenVariableIds.add(alias.id);
+              try {
+                const variable = figma.variables.getVariableById(alias.id);
+                if (variable && variable.resolvedType === 'COLOR') {
+                  const modeIds = Object.keys(variable.valuesByMode);
+                  if (modeIds.length > 0) {
+                    const rawValue = variable.valuesByMode[modeIds[0]];
+                    const value = rawValue as RGBA;
+                    if (value && typeof value === 'object' && 'r' in value) {
+                      variableTokens.push({
+                        id: variable.id,
+                        name: variable.name,
+                        type: 'VARIABLE',
+                        color: {
+                          r: value.r,
+                          g: value.g,
+                          b: value.b,
+                          a: value.a ?? 1
+                        },
+                        hex: rgbToHex(value.r, value.g, value.b)
+                      });
+                    }
+                  }
+                }
+              } catch (e) {
+                console.log('Error processing variable id:', alias.id, e);
+              }
+            }
+          }
+        }
+      }
+      if ('children' in node) {
+        for (const child of (node as ChildrenMixin).children) {
+          collectVariablesFromNode(child as SceneNode);
+        }
+      }
+    }
+
+    for (const node of selection) {
+      collectVariablesFromNode(node);
+    }
+
+    console.log('Final results - Style tokens:', styleTokens.length, 'Variable tokens:', variableTokens.length);
+
     return {
       hasSelection: true,
       nodeCount: selection.length,
-      colorTokens: allTokens
+      colorTokens: styleTokens,
+      variableTokens
     };
   }
 

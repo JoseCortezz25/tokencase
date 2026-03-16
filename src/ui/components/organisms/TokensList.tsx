@@ -3,13 +3,33 @@ import { TokenCard } from '../molecules/TokenCard';
 import { EmptyStateIcon } from '../molecules/EmptyStateIcon';
 import { ExportSection } from './ExportSection';
 import { ColorToken } from '@common/networkSides';
+import { SourceMethod } from '../molecules/SourceSelector';
 
 interface TokensListProps {
   tokens: ColorToken[];
   nodeCount: number;
+  sourceMethod: SourceMethod;
 }
 
-function TokensList({ tokens, nodeCount }: TokensListProps) {
+const EMPTY_HINTS: Record<SourceMethod, string[]> = {
+  styles: [
+    '• Elements with local color styles applied',
+    '• Frames or groups containing styled elements',
+    '• Components with color tokens',
+  ],
+  variables: [
+    '• Elements with color variables bound to fills or strokes',
+    '• Frames or groups containing variable-bound elements',
+    '• Components using color variables',
+  ],
+  both: [
+    '• Elements with local color styles or color variables',
+    '• Frames or groups containing styled elements',
+    '• Components with color tokens or variables',
+  ],
+};
+
+function TokensList({ tokens, nodeCount, sourceMethod }: TokensListProps) {
   if (tokens.length === 0) {
     return (
       <div className="w-full py-8 text-center">
@@ -20,15 +40,15 @@ function TokensList({ tokens, nodeCount }: TokensListProps) {
         </h2>
         <p className="mb-4 text-gray-600">
           The selected {nodeCount} node{nodeCount !== 1 ? 's' : ''} don't use
-          local color styles.
+          any color {sourceMethod === 'styles' ? 'styles' : sourceMethod === 'variables' ? 'variables' : 'styles or variables'}.
         </p>
 
         <div className="rounded-lg bg-amber-50 p-3 text-left">
           <p className="mb-1 font-medium text-amber-800">Try selecting:</p>
           <ul className="space-y-1 text-sm text-amber-700">
-            <li>• Elements with local color styles applied</li>
-            <li>• Frames or groups containing styled elements</li>
-            <li>• Components with color tokens</li>
+            {EMPTY_HINTS[sourceMethod].map(hint => (
+              <li key={hint}>{hint}</li>
+            ))}
           </ul>
         </div>
       </div>
